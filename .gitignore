@@ -1,0 +1,13 @@
+**/node_modules/
+**/dist/
+**/target/
+**/.mvn/apache-maven-*/
+**/.mvn/wrapper/*.zip
+**/.env
+**/.env.local
+**/*.local
+**/*.log
+.idea/
+.vscode/
+*.iml
+.DS_Store
