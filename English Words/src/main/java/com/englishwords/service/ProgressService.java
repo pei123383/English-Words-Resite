@@ -10,7 +10,6 @@ import com.englishwords.repository.UserRepository;
 import com.englishwords.repository.WordProgressRepository;
 import com.englishwords.repository.WordRepository;
 import com.englishwords.security.CurrentUserProvider;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -45,10 +44,9 @@ public class ProgressService {
     @Transactional(readOnly = true)
     public ProgressOverviewResponse overview() {
         Long userId = currentUserProvider.userId();
-        LocalDateTime now = LocalDateTime.now();
         return new ProgressOverviewResponse(
             wordRepository.countByUserId(userId),
-            progressRepository.countDue(userId, now),
+            progressRepository.countDue(userId),
             progressRepository.countMastered(userId, 4),
             progressRepository.sumReviewCount(userId)
         );
@@ -59,7 +57,6 @@ public class ProgressService {
         Long userId = currentUserProvider.userId();
         return progressRepository.findDue(
                 userId,
-                LocalDateTime.now(),
                 PageRequest.of(0, Math.max(1, Math.min(limit, 100)))
             )
             .stream()

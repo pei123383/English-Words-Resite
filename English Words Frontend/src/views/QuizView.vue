@@ -320,6 +320,7 @@ onMounted(() => {
   background: #f5fbfa;
 }
 
+
 .answer-box.danger {
   border-color: #f2c2c2;
   background: #fff7f7;

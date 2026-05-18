@@ -66,7 +66,6 @@ public class QuizService {
                 userId,
                 bookId,
                 onlyDue,
-                LocalDateTime.now(),
                 PageRequest.of(0, safeCount)
             )
             .stream()

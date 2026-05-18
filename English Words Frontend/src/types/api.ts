@@ -82,6 +82,18 @@ export interface WordImportResult {
   errors: string[]
 }
 
+export interface DictionaryEntry {
+  word: string
+  translation: string
+}
+
+export interface DictionaryQuery {
+  keyword?: string
+  page?: number
+  size?: number
+}
+
+
 export type QuizMode = 'EN_TO_CN' | 'CN_TO_EN' | 'MIXED'
 
 export interface QuizQuestion {

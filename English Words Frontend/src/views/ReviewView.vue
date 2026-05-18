@@ -16,7 +16,7 @@ const selectedAnswer = ref('')
 const submitResult = ref<QuizSubmitResult | null>(null)
 const questionStartedAt = ref<number | null>(null)
 const lastResult = ref<QuizSubmitResult | null>(null)
-const emptyMessage = ref('点击开始复习，进入本轮到期单词练习')
+const emptyMessage = ref('点击开始复习，进入本轮已学习单词练习')
 const overview = ref<ProgressOverview>({
   totalWords: 0,
   dueWords: 0,
@@ -65,7 +65,7 @@ async function startReview() {
   lastResult.value = null
   submitResult.value = null
   selectedAnswer.value = ''
-  emptyMessage.value = '点击开始复习，进入本轮到期单词练习'
+  emptyMessage.value = '点击开始复习，进入本轮已学习单词练习'
   try {
     await loadOverview()
     if (overview.value.dueWords <= 0) {
@@ -84,7 +84,7 @@ async function startReview() {
     questionStartedAt.value = questions.value.length ? performance.now() : null
     if (!questions.value.length) {
       emptyMessage.value = '暂无可复习题目'
-      ElMessage.info('当前待复习单词不足以组成选择题，可以先去随机抽查练习。')
+      ElMessage.info('当前已学习单词不足以组成选择题，可以先去随机抽查练习。')
     }
   } finally {
     loading.value = false
@@ -131,7 +131,7 @@ onMounted(loadOverview)
     <div class="page-header">
       <div>
         <h1 class="page-title">复习</h1>
-        <p class="page-subtitle">默认练习已经到期的单词，系统会根据选择题结果自动评分并更新熟练度。</p>
+        <p class="page-subtitle">默认练习已经学习过的单词，未到下次复习时间的单词也会显示在这里。</p>
       </div>
       <div class="header-actions">
         <el-button :icon="Refresh" :loading="loading" @click="refreshOverview">刷新</el-button>
@@ -151,8 +151,8 @@ onMounted(loadOverview)
           </div>
         </div>
         <div class="summary-copy">
-          <strong>只抽到期单词</strong>
-          <span>本页固定使用待复习筛选，不会混入未到期单词。</span>
+          <strong>只抽已学习单词</strong>
+          <span>本页固定使用待复习筛选，不会混入还没有学习过的单词。</span>
         </div>
         <el-button type="primary" :icon="VideoPlay" :disabled="!canStartReview" :loading="loading" @click="startReview">
           开始复习
@@ -233,7 +233,7 @@ onMounted(loadOverview)
 
     <section v-else-if="overview.dueWords <= 0" class="panel">
       <div class="empty-panel">
-        <el-empty description="暂无待复习单词">
+        <el-empty description="暂无已学习单词">
           <template #default>
             <RouterLink to="/quiz" custom v-slot="{ navigate }">
               <el-button @click="navigate">随机抽查</el-button>
@@ -427,6 +427,7 @@ onMounted(loadOverview)
   border-radius: 8px;
   background: #f5fbfa;
 }
+
 
 .answer-box.danger {
   border-color: #f2c2c2;

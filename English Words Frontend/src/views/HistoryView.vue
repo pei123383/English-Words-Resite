@@ -35,9 +35,6 @@ onMounted(load)
         <el-table v-loading="loading" :data="records" size="large">
           <el-table-column prop="word" label="单词" min-width="140" />
           <el-table-column prop="translation" label="释义" min-width="240" show-overflow-tooltip />
-          <el-table-column prop="mode" label="题型" width="120">
-            <template #default="{ row }">{{ row.mode === 'EN_TO_CN' ? '英译中' : '中译英' }}</template>
-          </el-table-column>
           <el-table-column prop="quality" label="评分" width="90" />
           <el-table-column label="结果" width="100">
             <template #default="{ row }">

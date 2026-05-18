@@ -35,6 +35,9 @@ public class WordBook {
     @Column(length = 500)
     private String description;
 
+    @Column(length = 120)
+    private String presetKey;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -86,6 +89,14 @@ public class WordBook {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getPresetKey() {
+        return presetKey;
+    }
+
+    public void setPresetKey(String presetKey) {
+        this.presetKey = presetKey;
     }
 
     public LocalDateTime getCreatedAt() {

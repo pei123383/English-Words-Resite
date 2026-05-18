@@ -1,21 +1,33 @@
 <script setup lang="ts">
-import { Delete, Edit, Plus, Refresh, UploadFilled } from '@element-plus/icons-vue'
+import { Delete, Edit, Plus, Refresh, Search, UploadFilled } from '@element-plus/icons-vue'
 import type { UploadRequestOptions } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import DateText from '@/components/DateText.vue'
 import MasteryTag from '@/components/MasteryTag.vue'
+import { dictionaryApi } from '@/api/dictionary'
 import { wordBookApi } from '@/api/wordBooks'
 import { wordsApi } from '@/api/words'
-import type { PageResponse, Word, WordBook, WordImportResult, WordPayload, WordQuery } from '@/types/api'
+import type {
+  DictionaryEntry,
+  DictionaryQuery,
+  PageResponse,
+  Word,
+  WordBook,
+  WordImportResult,
+  WordPayload,
+  WordQuery
+} from '@/types/api'
 
 const loading = ref(false)
 const saving = ref(false)
+const dictionaryLoading = ref(false)
 const dialogVisible = ref(false)
 const importVisible = ref(false)
 const editingId = ref<number | null>(null)
 const books = ref<WordBook[]>([])
 const pageData = ref<PageResponse<Word>>({ items: [], total: 0, page: 0, size: 20, totalPages: 0 })
+const dictionaryData = ref<PageResponse<DictionaryEntry>>({ items: [], total: 0, page: 0, size: 5, totalPages: 0 })
 const importResult = ref<WordImportResult | null>(null)
 const importBookId = ref<number | undefined>()
 
@@ -23,6 +35,12 @@ const query = reactive<WordQuery>({
   page: 0,
   size: 20,
   onlyDue: false
+})
+
+const dictionaryQuery = reactive<DictionaryQuery>({
+  keyword: '',
+  page: 0,
+  size: 5
 })
 
 const form = reactive<WordPayload>({
@@ -72,6 +90,9 @@ function resetFilters() {
 
 function openCreate() {
   editingId.value = null
+  dictionaryQuery.keyword = ''
+  dictionaryQuery.page = 0
+  dictionaryData.value = { items: [], total: 0, page: 0, size: dictionaryQuery.size || 5, totalPages: 0 }
   Object.assign(form, {
     bookId: books.value[0]?.id || 0,
     word: '',
@@ -85,6 +106,9 @@ function openCreate() {
 
 function openEdit(word: Word) {
   editingId.value = word.id
+  dictionaryQuery.keyword = ''
+  dictionaryQuery.page = 0
+  dictionaryData.value = { items: [], total: 0, page: 0, size: dictionaryQuery.size || 5, totalPages: 0 }
   Object.assign(form, {
     bookId: word.bookId,
     word: word.word,
@@ -94,6 +118,35 @@ function openEdit(word: Word) {
     tags: word.tags || ''
   })
   dialogVisible.value = true
+}
+
+async function searchDictionary() {
+  if (!dictionaryQuery.keyword?.trim()) {
+    ElMessage.warning('请输入要搜索的单词或释义')
+    return
+  }
+  dictionaryLoading.value = true
+  try {
+    dictionaryData.value = await dictionaryApi.search(dictionaryQuery)
+  } finally {
+    dictionaryLoading.value = false
+  }
+}
+
+function submitDictionarySearch() {
+  dictionaryQuery.page = 0
+  searchDictionary()
+}
+
+function fillFromDictionary(entry: DictionaryEntry) {
+  form.word = entry.word
+  form.translation = entry.translation
+  ElMessage.success('已填入单词和释义')
+}
+
+function handleDictionaryPageChange(page: number) {
+  dictionaryQuery.page = page - 1
+  searchDictionary()
 }
 
 async function saveWord() {
@@ -203,7 +256,7 @@ onMounted(reloadAll)
               <DateText :value="row.nextReviewAt" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
+          <el-table-column label="操作" width="190" fixed="right">
             <template #default="{ row }">
               <el-button :icon="Edit" circle @click="openEdit(row)" />
               <el-button :icon="Delete" circle type="danger" @click="removeWord(row)" />
@@ -228,6 +281,44 @@ onMounted(reloadAll)
 
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑单词' : '新增单词'" width="620px">
       <el-form label-position="top">
+        <div v-if="!editingId" class="dictionary-helper">
+          <div class="dictionary-helper-title">从内置词典搜索添加</div>
+          <div class="dictionary-helper-search">
+            <el-input
+              v-model.trim="dictionaryQuery.keyword"
+              clearable
+              placeholder="搜索英文单词或中文释义"
+              :prefix-icon="Search"
+              @keyup.enter="submitDictionarySearch"
+            />
+            <el-button type="primary" :icon="Search" :loading="dictionaryLoading" @click="submitDictionarySearch">
+              搜索
+            </el-button>
+          </div>
+          <div v-if="dictionaryData.items.length || dictionaryLoading" class="dictionary-results">
+            <el-table v-loading="dictionaryLoading" :data="dictionaryData.items" size="small">
+              <el-table-column prop="word" label="单词" width="130" />
+              <el-table-column prop="translation" label="释义" min-width="230" show-overflow-tooltip />
+              <el-table-column label="操作" width="88">
+                <template #default="{ row }">
+                  <el-button type="primary" link @click="fillFromDictionary(row)">填入</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-if="dictionaryData.total > (dictionaryQuery.size || 5)" class="dictionary-pagination">
+              <el-pagination
+                small
+                background
+                layout="prev, pager, next"
+                :current-page="dictionaryData.page + 1"
+                :page-size="dictionaryData.size"
+                :total="dictionaryData.total"
+                @current-change="handleDictionaryPageChange"
+              />
+            </div>
+          </div>
+        </div>
+
         <el-form-item label="词库" required>
           <el-select v-model="form.bookId" placeholder="请选择词库">
             <el-option v-for="book in bookOptions" :key="book.value" :label="book.label" :value="book.value" />
@@ -267,7 +358,7 @@ onMounted(reloadAll)
         <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
         <div class="el-upload__text">拖拽文件到这里，或点击选择 CSV/Excel</div>
         <template #tip>
-          <div class="el-upload__tip">表头固定为 word, translation, phonetic, example, tags</div>
+          <div class="el-upload__tip">表头只需要 word, translation</div>
         </template>
       </el-upload>
 
@@ -302,5 +393,41 @@ onMounted(reloadAll)
 
 .import-error {
   margin-top: 8px;
+}
+
+.dictionary-helper {
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.dictionary-helper-title {
+  margin-bottom: 10px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.dictionary-helper-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.dictionary-results {
+  margin-top: 12px;
+}
+
+.dictionary-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+}
+
+@media (max-width: 680px) {
+  .dictionary-helper-search {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

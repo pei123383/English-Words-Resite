@@ -160,6 +160,63 @@ class EnglishWordsApiIntegrationTest {
     }
 
     @Test
+    void reviewOnlyIncludesPreviouslyReviewedWordsEvenBeforeDueTime() throws Exception {
+        String token = registerAndGetToken("due-review-tester");
+        long bookId = createBook(token, "Due Review");
+        importWords(token, bookId, """
+            word,translation
+            fresh,fresh
+            learned,learned
+            helper,helper
+            spare,spare
+            """);
+
+        mockMvc.perform(get("/api/progress/overview")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.totalWords").value(4))
+            .andExpect(jsonPath("$.data.dueWords").value(0));
+
+        mockMvc.perform(get("/api/progress/due")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", hasSize(0)));
+
+        mockMvc.perform(get("/api/quizzes/random")
+                .param("bookId", String.valueOf(bookId))
+                .param("count", "10")
+                .param("mode", "EN_TO_CN")
+                .param("onlyDue", "true")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", hasSize(0)));
+
+        assertSubmitQuality(token, bookId, "learned", "learned", 4_000, 5, true);
+
+        mockMvc.perform(get("/api/progress/overview")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.totalReviews").value(1))
+            .andExpect(jsonPath("$.data.dueWords").value(1));
+
+        mockMvc.perform(get("/api/progress/due")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", hasSize(1)))
+            .andExpect(jsonPath("$.data[0].word").value("learned"));
+
+        mockMvc.perform(get("/api/quizzes/random")
+                .param("bookId", String.valueOf(bookId))
+                .param("count", "10")
+                .param("mode", "EN_TO_CN")
+                .param("onlyDue", "true")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data", hasSize(1)))
+            .andExpect(jsonPath("$.data[0].word").value("learned"));
+    }
+
+    @Test
     void comparesEnglishAnswersCaseInsensitively() throws Exception {
         String token = registerAndGetToken("case-tester");
         long bookId = createBook(token, "Case");
@@ -211,6 +268,27 @@ class EnglishWordsApiIntegrationTest {
             .andExpect(jsonPath("$.data.createdCount").value(1))
             .andExpect(jsonPath("$.data.updatedCount").value(0))
             .andExpect(jsonPath("$.data.skippedCount").value(0));
+    }
+
+    @Test
+    void searchesBuiltInDictionary() throws Exception {
+        String token = registerAndGetToken("dictionary-tester");
+
+        mockMvc.perform(get("/api/dictionary")
+                .param("keyword", "app")
+                .param("size", "10")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.total").value(2))
+            .andExpect(jsonPath("$.data.items[0].word").value("apple"))
+            .andExpect(jsonPath("$.data.items[1].word").value("application"));
+
+        mockMvc.perform(get("/api/dictionary")
+                .param("keyword", "网络")
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.total").value(1))
+            .andExpect(jsonPath("$.data.items[0].word").value("network"));
     }
 
     @Test

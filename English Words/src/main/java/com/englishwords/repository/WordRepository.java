@@ -1,7 +1,6 @@
 package com.englishwords.repository;
 
 import com.englishwords.entity.Word;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -22,19 +21,21 @@ public interface WordRepository extends JpaRepository<Word, Long>, JpaSpecificat
 
     List<Word> findByUserIdAndWordBookIdNotAndIdNot(Long userId, Long wordBookId, Long id);
 
+    @Query("select lower(w.term) from Word w where w.user.id = :userId and w.wordBook.id = :wordBookId")
+    List<String> findLowerTermsByUserIdAndWordBookId(@Param("userId") Long userId, @Param("wordBookId") Long wordBookId);
+
     @Query("""
         select w from Word w
         join w.progress p
         where w.user.id = :userId
           and (:bookId is null or w.wordBook.id = :bookId)
-          and (:onlyDue = false or p.nextReviewAt is null or p.nextReviewAt <= :now)
+          and (:onlyDue = false or p.reviewCount > 0)
         order by function('RAND')
         """)
     List<Word> findRandomWords(
         @Param("userId") Long userId,
         @Param("bookId") Long bookId,
         @Param("onlyDue") boolean onlyDue,
-        @Param("now") LocalDateTime now,
         Pageable pageable
     );
 }

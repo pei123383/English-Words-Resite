@@ -15,3 +15,11 @@ app:
   jwt:
     secret: test-secret-for-english-words-backend
     expiration-ms: 3600000
+  preset-word-book:
+    enabled: false
+    key: cet6-core
+    name: 六级核心词汇
+    description: 系统预设六级核心词汇，注册后可直接学习。
+    resource: classpath:preset/cet6_core_words.csv
+  dictionary:
+    resource: classpath:dictionary/test_dictionary.csv

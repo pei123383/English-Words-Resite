@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Lock, User } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -10,6 +10,10 @@ const route = useRoute()
 const auth = useAuthStore()
 const activeTab = ref<'login' | 'register'>('login')
 const loading = ref(false)
+const usernameMinLength = 3
+const usernameMaxLength = 64
+const nicknameMinLength = 3
+const nicknameMaxLength = 64
 
 const form = reactive({
   username: '',
@@ -17,9 +21,43 @@ const form = reactive({
   nickname: ''
 })
 
+const nicknameError = computed(() => {
+  if (activeTab.value !== 'register' || !form.nickname) {
+    return ''
+  }
+  if (form.nickname.length < nicknameMinLength) {
+    return `昵称不能少于 ${nicknameMinLength} 个字符，当前已输入 ${form.nickname.length} 个字符`
+  }
+  if (form.nickname.length > nicknameMaxLength) {
+    return `昵称不能超过 ${nicknameMaxLength} 个字符，当前已输入 ${form.nickname.length} 个字符`
+  }
+  return ''
+})
+
+const usernameError = computed(() => {
+  if (!form.username) {
+    return ''
+  }
+  if (form.username.length < usernameMinLength) {
+    return `用户名长度必须在 ${usernameMinLength} 到 ${usernameMaxLength} 个字符之间，当前已输入 ${form.username.length} 个字符`
+  }
+  if (form.username.length > usernameMaxLength) {
+    return `用户名长度必须在 ${usernameMinLength} 到 ${usernameMaxLength} 个字符之间，当前已输入 ${form.username.length} 个字符`
+  }
+  return ''
+})
+
 async function submit() {
   if (!form.username || !form.password) {
     ElMessage.warning('请输入用户名和密码')
+    return
+  }
+  if (usernameError.value) {
+    ElMessage.warning(usernameError.value)
+    return
+  }
+  if (nicknameError.value) {
+    ElMessage.warning(nicknameError.value)
     return
   }
   loading.value = true
@@ -30,7 +68,7 @@ async function submit() {
       await auth.register({
         username: form.username,
         password: form.password,
-        nickname: form.nickname
+        nickname: form.nickname || undefined
       })
     }
     ElMessage.success(activeTab.value === 'login' ? '登录成功' : '注册成功')
@@ -71,7 +109,10 @@ async function submit() {
 
       <el-form class="login-form" @submit.prevent>
         <el-form-item>
-          <el-input v-model.trim="form.username" :prefix-icon="User" placeholder="用户名" size="large" />
+          <div class="field-stack">
+            <el-input v-model.trim="form.username" :prefix-icon="User" placeholder="用户名" size="large" />
+            <p v-if="usernameError" class="field-tip error">{{ usernameError }}</p>
+          </div>
         </el-form-item>
         <el-form-item>
           <el-input
@@ -85,7 +126,10 @@ async function submit() {
           />
         </el-form-item>
         <el-form-item v-if="activeTab === 'register'">
-          <el-input v-model.trim="form.nickname" placeholder="昵称" size="large" @keyup.enter="submit" />
+          <div class="field-stack">
+            <el-input v-model.trim="form.nickname" placeholder="昵称" size="large" @keyup.enter="submit" />
+            <p v-if="nicknameError" class="field-tip error">{{ nicknameError }}</p>
+          </div>
         </el-form-item>
         <el-button class="submit-button" size="large" type="primary" :loading="loading" @click="submit">
           {{ activeTab === 'login' ? '登录' : '创建账户' }}
@@ -178,6 +222,20 @@ async function submit() {
 
 .submit-button {
   width: 100%;
+}
+
+.field-stack {
+  width: 100%;
+}
+
+.field-tip {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.field-tip.error {
+  color: #c45656;
 }
 
 @media (max-width: 900px) {

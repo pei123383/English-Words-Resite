@@ -18,6 +18,7 @@ const router = createRouter({
         { path: 'dashboard', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
         { path: 'books', name: 'books', component: () => import('@/views/BooksView.vue') },
         { path: 'words', name: 'words', component: () => import('@/views/WordsView.vue') },
+        { path: 'dictionary', name: 'dictionary', component: () => import('@/views/DictionaryView.vue') },
         { path: 'quiz', name: 'quiz', component: () => import('@/views/QuizView.vue') },
         { path: 'review', name: 'review', component: () => import('@/views/ReviewView.vue') },
         { path: 'progress', name: 'progress', component: () => import('@/views/ProgressView.vue') },

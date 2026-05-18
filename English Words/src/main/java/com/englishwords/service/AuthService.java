@@ -22,19 +22,22 @@ public class AuthService {
     private final JwtService jwtService;
     private final MapperService mapperService;
     private final CurrentUserProvider currentUserProvider;
+    private final PresetWordBookService presetWordBookService;
 
     public AuthService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         JwtService jwtService,
         MapperService mapperService,
-        CurrentUserProvider currentUserProvider
+        CurrentUserProvider currentUserProvider,
+        PresetWordBookService presetWordBookService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.mapperService = mapperService;
         this.currentUserProvider = currentUserProvider;
+        this.presetWordBookService = presetWordBookService;
     }
 
     @Transactional
@@ -49,10 +52,11 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setNickname(isBlank(request.nickname()) ? username : request.nickname().trim());
         userRepository.save(user);
+        presetWordBookService.ensureForUser(user);
         return new AuthResponse(jwtService.generateToken(user), mapperService.toUserResponse(user));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         String username = normalize(request.username());
         User user = userRepository.findByUsername(username)
@@ -60,6 +64,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new BadCredentialsException("用户名或密码错误");
         }
+        presetWordBookService.ensureForUser(user);
         return new AuthResponse(jwtService.generateToken(user), mapperService.toUserResponse(user));
     }
 

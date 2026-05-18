@@ -74,7 +74,8 @@ onMounted(load)
       <div class="stat-card">
         <el-progress type="dashboard" :percentage="masteryRate" :width="76" />
         <span>掌握率</span>
-        <strong>{{ overview.totalReviews }} 次</strong>
+        <strong>{{ masteryRate }}%</strong>
+        <small>{{ overview.masteredWords }} / {{ overview.totalWords }} 词，熟练度 ≥ 4/5</small>
       </div>
     </div>
 
@@ -135,7 +136,6 @@ onMounted(load)
         <el-table v-if="history.length" :data="history" size="large">
           <el-table-column prop="word" label="单词" min-width="140" />
           <el-table-column prop="translation" label="释义" min-width="220" show-overflow-tooltip />
-          <el-table-column prop="mode" label="题型" width="120" />
           <el-table-column prop="quality" label="评分" width="90" />
           <el-table-column label="时间" width="150">
             <template #default="{ row }">
@@ -179,6 +179,11 @@ onMounted(load)
 .stat-card strong {
   font-size: 28px;
   color: #111827;
+}
+
+.stat-card small {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .dashboard-grid {

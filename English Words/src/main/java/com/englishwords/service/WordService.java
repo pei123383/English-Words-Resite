@@ -17,7 +17,6 @@ import com.englishwords.service.WordImportParser.ImportWordRow;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -238,11 +237,7 @@ public class WordService {
                 predicates.add(cb.equal(progressJoin.get("masteryLevel"), masteryLevel));
             }
             if (onlyDue) {
-                LocalDateTime now = LocalDateTime.now();
-                predicates.add(cb.or(
-                    cb.isNull(progressJoin.get("nextReviewAt")),
-                    cb.lessThanOrEqualTo(progressJoin.get("nextReviewAt"), now)
-                ));
+                predicates.add(cb.greaterThan(progressJoin.get("reviewCount"), 0));
             }
             query.orderBy(cb.desc(root.get("updatedAt")));
             return cb.and(predicates.toArray(Predicate[]::new));

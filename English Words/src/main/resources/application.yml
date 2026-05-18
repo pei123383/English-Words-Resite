@@ -30,3 +30,11 @@ app:
   jwt:
     secret: ${JWT_SECRET:english-words-development-secret-change-me-before-production}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  preset-word-book:
+    enabled: ${PRESET_WORD_BOOK_ENABLED:true}
+    key: ${PRESET_WORD_BOOK_KEY:cet6-core}
+    name: ${PRESET_WORD_BOOK_NAME:六级核心词汇}
+    description: ${PRESET_WORD_BOOK_DESCRIPTION:系统预设六级核心词汇，注册后可直接学习。}
+    resource: ${PRESET_WORD_BOOK_RESOURCE:classpath:preset/cet6_core_words.csv}
+  dictionary:
+    resource: ${DICTIONARY_RESOURCE:classpath:dictionary/en_words.csv}

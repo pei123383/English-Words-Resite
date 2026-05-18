@@ -16,17 +16,20 @@ public interface WordProgressRepository extends JpaRepository<WordProgress, Long
     @Query("""
         select p from WordProgress p
         where p.user.id = :userId
-          and (p.nextReviewAt is null or p.nextReviewAt <= :now)
-        order by p.nextReviewAt asc
+          and p.reviewCount > 0
+        order by
+          case when p.nextReviewAt is null then 1 else 0 end,
+          p.nextReviewAt asc,
+          p.updatedAt desc
         """)
-    List<WordProgress> findDue(@Param("userId") Long userId, @Param("now") LocalDateTime now, Pageable pageable);
+    List<WordProgress> findDue(@Param("userId") Long userId, Pageable pageable);
 
     @Query("""
         select count(p) from WordProgress p
         where p.user.id = :userId
-          and (p.nextReviewAt is null or p.nextReviewAt <= :now)
+          and p.reviewCount > 0
         """)
-    long countDue(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+    long countDue(@Param("userId") Long userId);
 
     @Query("select count(p) from WordProgress p where p.user.id = :userId and p.masteryLevel >= :level")
     long countMastered(@Param("userId") Long userId, @Param("level") int level);

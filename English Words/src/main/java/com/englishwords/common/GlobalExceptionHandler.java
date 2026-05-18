@@ -48,6 +48,23 @@ public class GlobalExceptionHandler {
     }
 
     private String formatFieldError(FieldError error) {
-        return error.getField() + " " + error.getDefaultMessage();
+        String message = error.getDefaultMessage();
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+        return fieldLabel(error.getField()) + "格式不正确";
+    }
+
+    private String fieldLabel(String field) {
+        return switch (field) {
+            case "username" -> "用户名";
+            case "password" -> "密码";
+            case "nickname" -> "昵称";
+            case "name" -> "名称";
+            case "word" -> "单词";
+            case "translation" -> "释义";
+            case "selectedAnswer" -> "答案";
+            default -> field;
+        };
     }
 }

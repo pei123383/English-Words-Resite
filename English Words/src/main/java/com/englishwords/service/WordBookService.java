@@ -19,22 +19,28 @@ public class WordBookService {
     private final UserRepository userRepository;
     private final CurrentUserProvider currentUserProvider;
     private final MapperService mapperService;
+    private final PresetWordBookService presetWordBookService;
 
     public WordBookService(
         WordBookRepository wordBookRepository,
         UserRepository userRepository,
         CurrentUserProvider currentUserProvider,
-        MapperService mapperService
+        MapperService mapperService,
+        PresetWordBookService presetWordBookService
     ) {
         this.wordBookRepository = wordBookRepository;
         this.userRepository = userRepository;
         this.currentUserProvider = currentUserProvider;
         this.mapperService = mapperService;
+        this.presetWordBookService = presetWordBookService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<WordBookResponse> list() {
         Long userId = currentUserProvider.userId();
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(401, "User not found"));
+        presetWordBookService.ensureForUser(user);
         return wordBookRepository.findByUserIdOrderByUpdatedAtDesc(userId)
             .stream()
             .map(mapperService::toWordBookResponse)
