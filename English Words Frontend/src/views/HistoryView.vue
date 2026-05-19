@@ -2,7 +2,6 @@
 import { Refresh } from '@element-plus/icons-vue'
 import { onMounted, ref } from 'vue'
 import DateText from '@/components/DateText.vue'
-import PronunciationButton from '@/components/PronunciationButton.vue'
 import { quizApi } from '@/api/quiz'
 import type { QuizRecord } from '@/types/api'
 
@@ -34,14 +33,7 @@ onMounted(load)
     <section class="panel">
       <div class="panel-body">
         <el-table v-loading="loading" :data="records" size="large">
-          <el-table-column label="单词" min-width="160">
-            <template #default="{ row }">
-              <span class="word-with-pronunciation">
-                <span>{{ row.word }}</span>
-                <PronunciationButton :text="row.word" />
-              </span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="word" label="单词" min-width="140" />
           <el-table-column prop="translation" label="释义" min-width="240" show-overflow-tooltip />
           <el-table-column prop="quality" label="评分" width="90" />
           <el-table-column label="结果" width="100">
@@ -61,17 +53,3 @@ onMounted(load)
     </section>
   </div>
 </template>
-
-<style scoped>
-.word-with-pronunciation {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.word-with-pronunciation > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-</style>

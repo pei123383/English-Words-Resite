@@ -4,7 +4,6 @@ import { ElMessage } from 'element-plus'
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import DateText from '@/components/DateText.vue'
 import MasteryTag from '@/components/MasteryTag.vue'
-import PronunciationButton from '@/components/PronunciationButton.vue'
 import { quizApi } from '@/api/quiz'
 import { wordBookApi } from '@/api/wordBooks'
 import type { QuizMode, QuizQuestion, QuizSubmitResult, WordBook } from '@/types/api'
@@ -29,9 +28,6 @@ const form = reactive({
 const currentQuestion = computed(() => questions.value[currentIndex.value])
 const finished = computed(() => questions.value.length > 0 && currentIndex.value >= questions.value.length)
 const canAnswer = computed(() => Boolean(currentQuestion.value && !submitResult.value && !submitting.value))
-const promptPronunciationText = computed(() =>
-  currentQuestion.value?.mode === 'EN_TO_CN' ? currentQuestion.value.word : ''
-)
 
 function modeLabel(mode: QuizMode) {
   if (mode === 'EN_TO_CN') return '英译中'
@@ -147,10 +143,7 @@ onMounted(() => {
         </div>
 
         <div class="quiz-mode">{{ modeLabel(currentQuestion.mode) }}</div>
-        <div class="quiz-prompt-row">
-          <h2 class="quiz-prompt">{{ currentQuestion.prompt }}</h2>
-          <PronunciationButton v-if="promptPronunciationText" :text="promptPronunciationText" size="default" />
-        </div>
+        <h2 class="quiz-prompt">{{ currentQuestion.prompt }}</h2>
 
         <div class="quiz-meta">
           <span v-if="currentQuestion.phonetic">{{ currentQuestion.phonetic }}</span>
@@ -179,7 +172,6 @@ onMounted(() => {
           </div>
           <p>
             正确答案：<strong>{{ submitResult.correctAnswer }}</strong>
-            <PronunciationButton v-if="currentQuestion.mode === 'CN_TO_EN'" :text="currentQuestion.word" />
           </p>
           <p v-if="currentQuestion.example">{{ currentQuestion.example }}</p>
           <div class="result-stats">
@@ -236,14 +228,6 @@ onMounted(() => {
   margin-top: 26px;
   color: #2f8f83;
   font-weight: 700;
-}
-
-.quiz-prompt-row {
-  display: flex;
-  max-width: 900px;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
 }
 
 .quiz-prompt {
@@ -375,10 +359,6 @@ onMounted(() => {
 @media (max-width: 680px) {
   .quiz-prompt {
     font-size: 34px;
-  }
-
-  .quiz-prompt-row {
-    align-items: flex-start;
   }
 
   .option-grid {

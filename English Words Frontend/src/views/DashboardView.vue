@@ -3,7 +3,6 @@ import { Collection, DataLine, Finished, Refresh } from '@element-plus/icons-vue
 import { computed, onMounted, ref } from 'vue'
 import DateText from '@/components/DateText.vue'
 import MasteryTag from '@/components/MasteryTag.vue'
-import PronunciationButton from '@/components/PronunciationButton.vue'
 import { progressApi } from '@/api/progress'
 import { quizApi } from '@/api/quiz'
 import { wordBookApi } from '@/api/wordBooks'
@@ -91,14 +90,7 @@ onMounted(load)
             </div>
           </div>
           <el-table v-if="dueWords.length" :data="dueWords" size="large">
-            <el-table-column label="单词" min-width="140">
-              <template #default="{ row }">
-                <span class="word-with-pronunciation">
-                  <span>{{ row.word }}</span>
-                  <PronunciationButton :text="row.word" />
-                </span>
-              </template>
-            </el-table-column>
+            <el-table-column prop="word" label="单词" min-width="120" />
             <el-table-column prop="translation" label="释义" min-width="160" show-overflow-tooltip />
             <el-table-column label="熟练度" width="120">
               <template #default="{ row }">
@@ -142,14 +134,7 @@ onMounted(load)
           <RouterLink to="/history">查看历史</RouterLink>
         </div>
         <el-table v-if="history.length" :data="history" size="large">
-          <el-table-column label="单词" min-width="160">
-            <template #default="{ row }">
-              <span class="word-with-pronunciation">
-                <span>{{ row.word }}</span>
-                <PronunciationButton :text="row.word" />
-              </span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="word" label="单词" min-width="140" />
           <el-table-column prop="translation" label="释义" min-width="220" show-overflow-tooltip />
           <el-table-column prop="quality" label="评分" width="90" />
           <el-table-column label="时间" width="150">
@@ -263,18 +248,6 @@ onMounted(load)
   color: #2f8f83;
   font-style: normal;
   font-weight: 700;
-}
-
-.word-with-pronunciation {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.word-with-pronunciation > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 @media (max-width: 1080px) {

@@ -5,7 +5,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import DateText from '@/components/DateText.vue'
 import MasteryTag from '@/components/MasteryTag.vue'
-import PronunciationButton from '@/components/PronunciationButton.vue'
 import { dictionaryApi } from '@/api/dictionary'
 import { wordBookApi } from '@/api/wordBooks'
 import { wordsApi } from '@/api/words'
@@ -243,14 +242,7 @@ onMounted(reloadAll)
     <section class="panel">
       <div class="panel-body">
         <el-table v-loading="loading" :data="pageData.items" size="large">
-          <el-table-column label="单词" min-width="150">
-            <template #default="{ row }">
-              <span class="word-with-pronunciation">
-                <span>{{ row.word }}</span>
-                <PronunciationButton :text="row.word" />
-              </span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="word" label="单词" min-width="130" />
           <el-table-column prop="translation" label="释义" min-width="220" show-overflow-tooltip />
           <el-table-column prop="bookName" label="词库" min-width="130" />
           <el-table-column label="熟练度" width="130">
@@ -305,14 +297,7 @@ onMounted(reloadAll)
           </div>
           <div v-if="dictionaryData.items.length || dictionaryLoading" class="dictionary-results">
             <el-table v-loading="dictionaryLoading" :data="dictionaryData.items" size="small">
-              <el-table-column label="单词" width="150">
-                <template #default="{ row }">
-                  <span class="word-with-pronunciation">
-                    <span>{{ row.word }}</span>
-                    <PronunciationButton :text="row.word" />
-                  </span>
-                </template>
-              </el-table-column>
+              <el-table-column prop="word" label="单词" width="130" />
               <el-table-column prop="translation" label="释义" min-width="230" show-overflow-tooltip />
               <el-table-column label="操作" width="88">
                 <template #default="{ row }">
@@ -438,18 +423,6 @@ onMounted(reloadAll)
   display: flex;
   justify-content: flex-end;
   padding-top: 10px;
-}
-
-.word-with-pronunciation {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.word-with-pronunciation > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 @media (max-width: 680px) {

@@ -4,7 +4,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import DateText from '@/components/DateText.vue'
 import MasteryTag from '@/components/MasteryTag.vue'
-import PronunciationButton from '@/components/PronunciationButton.vue'
 import { progressApi } from '@/api/progress'
 import type { Progress, ProgressOverview } from '@/types/api'
 
@@ -62,14 +61,7 @@ onMounted(load)
     <section class="panel">
       <div class="panel-body">
         <el-table v-loading="loading" :data="dueWords" size="large">
-          <el-table-column label="单词" min-width="160">
-            <template #default="{ row }">
-              <span class="word-with-pronunciation">
-                <span>{{ row.word }}</span>
-                <PronunciationButton :text="row.word" />
-              </span>
-            </template>
-          </el-table-column>
+          <el-table-column prop="word" label="单词" min-width="140" />
           <el-table-column prop="translation" label="释义" min-width="240" show-overflow-tooltip />
           <el-table-column label="熟练度" width="130">
             <template #default="{ row }">
@@ -124,18 +116,6 @@ onMounted(load)
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-}
-
-.word-with-pronunciation {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.word-with-pronunciation > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 @media (max-width: 820px) {
